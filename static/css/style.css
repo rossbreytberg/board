@@ -1,5 +1,5 @@
 body {
-    background-image: url("images/wood.jpg");
+    background-image: url("../images/wood.jpg");
     margin: 0px;
 }
 
@@ -18,7 +18,7 @@ body {
     height: 710px;
     position: relative;
     margin: auto;
-    background-image: url("images/paper.jpg");
+    background-image: url("../images/paper.jpg");
     background-size: 100%;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
     border-radius: 5px;
