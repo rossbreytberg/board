@@ -27,6 +27,8 @@ body {
 
 .img {
     position: absolute;
+    border-style: solid;
+    border-color: white;
     image-rendering: -webkit-optimize-contrast;
     -webkit-transform: translate3d(0px, 0px, 0px);
     -webkit-backface-visibility: hidden;
