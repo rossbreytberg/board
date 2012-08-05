@@ -13,7 +13,6 @@ window.onload = function() {
         THUMBNAIL_SHADOW_BLUR = 2,
         THUMBNAIL_SHADOW_COLOR = "rgba(0, 0, 0, 0.5)",
         POSTIMAGE_ANIMATION_DURATION = "500ms",
-        RECEIVEIMAGE_ANIMATION_DURATION = "1500ms",
         POSTIMAGE_ANIMATION_TIMING_FUNCTION = "ease-in-out",
         EXPAND_ANIMATION_DURATION = "500ms",
         EXPAND_ANIMATION_TIMING_FUNCTION = "ease-in",
@@ -32,9 +31,11 @@ window.onload = function() {
         evt.preventDefault();
         var files = evt.dataTransfer.files;
         var file = files[0];
-        imageFileReader.readAsDataURL(file);
         pageX = evt.pageX - this.offsetLeft;
         pageY = evt.pageY - this.offsetTop;
+        var src = window.webkitURL.createObjectURL(file);
+        postImage(pageX, pageY, src, true);
+        imageFileReader.readAsBinaryString(file);
     };
 
     var onDragAndDropOutOfBounds = function(evt) {
@@ -133,8 +134,7 @@ window.onload = function() {
         });
     };
 
-
-    var postImage = function(x, y, src, broadcast) {
+    var postImage = function(x, y, src) {
         var image = new Image();
         image.src = src;
         image.className = "img";
@@ -146,11 +146,6 @@ window.onload = function() {
             var thumbnailScale = thumbnailDimensions.width/naturalWidth;
             var thumbnailScaleString = "scale(" + thumbnailScale + ")";
             var duration;
-            if (broadcast) {
-                duration = POSTIMAGE_ANIMATION_DURATION;
-            } else {
-                duration = RECEIVEIMAGE_ANIMATION_DURATION;
-            }
             var imageStyle = image.style;
             imageStyle.width = naturalWidth;
             imageStyle.height = naturalHeight;
@@ -160,17 +155,13 @@ window.onload = function() {
             var shadowSize = THUMBNAIL_SHADOW_SIZE * 1/thumbnailScale;
             var shadowBlur = THUMBNAIL_SHADOW_BLUR * 1/thumbnailScale;
             imageStyle.boxShadow = shadowSize + "px " + shadowSize + "px " + shadowBlur + "px " + THUMBNAIL_SHADOW_COLOR;
-            console.log(shadowSize + "px " + shadowSize + "px " + shadowBlur + "px " + THUMBNAIL_SHADOW_COLOR);
             imageStyle.webkitTransform = thumbnailScaleString;
             imageBoard.appendChild(image);
-            animation(image, ["-webkit-transform"], ["scale(0)"], [thumbnailScaleString], duration, POSTIMAGE_ANIMATION_TIMING_FUNCTION);
+            animation(image, ["-webkit-transform"], ["scale(0)"], [thumbnailScaleString], POSTIMAGE_ANIMATION_DURATION, POSTIMAGE_ANIMATION_TIMING_FUNCTION);
             image.onclick = function() {
                 expandImage(image);
             };
         };
-        if (broadcast) {
-            socket.emit("postImage", {"x": x, "y": y, "src": src});
-        }
         if (showingHelpTip) {
             showingHelpTip = false;
             helpTip.style.opacity = 0;
@@ -180,10 +171,8 @@ window.onload = function() {
         }
     };
 
-
-
     imageFileReader.onload = function(evt) {
-        postImage(pageX, pageY, evt.target.result, true);
+        socket.emit("postImage", {"x": pageX, "y": pageY, "binary": evt.target.result});
     };
 
     document.addEventListener("dragover", onDragAndDropOutOfBounds, false);
@@ -191,11 +180,12 @@ window.onload = function() {
     imageBoard.addEventListener("dragover", onDragOver, false);
     imageBoard.addEventListener("drop", onDrop, false);
 
-    socket.on('postImage', function(data) {
+    socket.on("postImage", function(data) {
         var x = data.x;
         var y = data.y;
-        var src = data.src;
-        postImage(x, y, src);
+        var binary = data.binary;
+        var base64 = btoa(binary);
+        postImage(x, y, "data:image/*;base64,"+base64);
     });
 
 };
