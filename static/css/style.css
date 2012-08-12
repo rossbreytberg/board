@@ -11,6 +11,8 @@ body {
     text-align: center;
     color: #EBC588;
     font-size: 12px;
+    -webkit-transition: opacity 2s;
+    -webkit-transform: translate3d(0px, 0px, 0px);
 }
 
 #imageBoard {
@@ -29,7 +31,9 @@ body {
     position: absolute;
     border-style: solid;
     border-color: white;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
     image-rendering: -webkit-optimize-contrast;
+    -webkit-transition: width 500ms, height 500ms, left 500ms, top 500ms, border-width 500ms;
     -webkit-transform: translate3d(0px, 0px, 0px);
     -webkit-backface-visibility: hidden;
 }
