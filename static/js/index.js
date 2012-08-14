@@ -1,6 +1,7 @@
 window.onload = function() {
     var imageBoard = document.getElementById("imageBoard"),
         helpTip = document.getElementById("helpTip"),
+        userCount = document.getElementById("userCount"),
         imageFileReader = new FileReader(),
         socket = io.connect(),
         expandedImage = null,
@@ -31,7 +32,7 @@ window.onload = function() {
         var file = files[0];
         pageX = evt.pageX - this.offsetLeft;
         pageY = evt.pageY - this.offsetTop;
-        var src = window.webkitURL.createObjectURL(file);
+        var src = (window.URL || window.webkitURL).createObjectURL(file);
         postImage(pageX, pageY, src);
         imageFileReader.readAsDataURL(file);
         if (showingHelpTip) {
@@ -83,13 +84,16 @@ window.onload = function() {
         var targetTop = pageHeight/2 - imageBoard.offsetTop - (targetHeight/2 + targetBorderWidth);
         image.onclick = null;
         var shrinkEnd = function() {
+            image.removeEventListener("transitionend", shrinkEnd);
             image.removeEventListener("webkitTransitionEnd", shrinkEnd);
             imageStyle.zIndex = 0;
         };
         var expandEnd = function() {
+            image.removeEventListener("transitionend", expandEnd);
             image.removeEventListener("webkitTransitionEnd", expandEnd);
             imageStyle.zIndex = 1;
         };
+        image.addEventListener("transitionend", expandEnd);
         image.addEventListener("webkitTransitionEnd", expandEnd);
         imageStyle.zIndex = 2;
         imageStyle.width = targetWidth;
@@ -97,15 +101,18 @@ window.onload = function() {
         imageStyle.left = targetLeft;
         imageStyle.top = targetTop;
         image.onclick = function() {
+            image.removeEventListener("transitionend", expandEnd);
             image.removeEventListener("webkitTransitionEnd", expandEnd);
             expandedImage = null;
             image.onclick = null;
+            image.addEventListener("transitionend", shrinkEnd);
             image.addEventListener("webkitTransitionEnd", shrinkEnd);
             imageStyle.width = initialWidth;
             imageStyle.height = initialHeight;
             imageStyle.left = initialLeft;
             imageStyle.top = initialTop;
             image.onclick = function() {
+                image.removeEventListener("transitionend", shrinkEnd);
                 image.removeEventListener("webkitTransitionEnd", shrinkEnd);
                 expandImage(image);
             };
@@ -159,6 +166,10 @@ window.onload = function() {
     document.addEventListener("drop", onDragAndDropOutOfBounds, false);
     imageBoard.addEventListener("dragover", onDragOver, false);
     imageBoard.addEventListener("drop", onDrop, false);
+
+    socket.on("userCountUpdate", function(count) {
+        userCount.innerText = count;
+    });
 
     socket.on("postImage", function(data) {
         var x = data.x;

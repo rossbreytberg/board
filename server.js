@@ -2,7 +2,8 @@ var http = require('http'),
     express = require('express'),
     app = express(),
     server = http.createServer(app),
-    io = require('socket.io').listen(server);
+    io = require('socket.io').listen(server),
+    userCount = 0;
 
 app.set('view engine', 'ejs')
 app.set('view options', {layout: false})
@@ -17,6 +18,12 @@ server.listen(process.env.VMC_APP_PORT || 8080, null);
 
 io.set('log level', 1);
 io.sockets.on('connection', function(socket) {
+    userCount++;
+    io.sockets.emit('userCountUpdate', userCount);
+    socket.on('disconnect', function() {
+        userCount--;
+        io.sockets.emit('userCountUpdate', userCount);
+    });
     socket.on('postImage', function(data) {
         socket.broadcast.emit('postImage', data);
     });
