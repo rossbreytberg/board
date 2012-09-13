@@ -1,20 +1,20 @@
-var http = require('http'),
-    express = require('express'),
-    app = express(),
-    server = http.createServer(app),
-    io = require('socket.io').listen(server),
+var express = require('express'),
+    io = require('socket.io'),
     userCount = 0;
 
-app.set('view engine', 'ejs')
-app.set('view options', {layout: false})
-app.set('views', __dirname + "/views")
-app.use("/static", express.static(__dirname + "/static"))
+var server = express.createServer(),
+    io = io.listen(server);
 
-app.get('/', function(req, res) {
+server.set('view engine', 'ejs')
+server.set('view options', {layout: false})
+server.set('views', __dirname + "/views")
+server.use("/static", express.static(__dirname + "/static"))
+
+server.get('/', function(req, res) {
     res.render('index');
 });
 
-server.listen(process.env.VMC_APP_PORT || 8080, null);
+server.listen(8080);
 
 io.set('log level', 1);
 io.sockets.on('connection', function(socket) {
