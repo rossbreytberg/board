@@ -1,16 +1,16 @@
-var express = require('express'),
-    io = require('socket.io'),
+var http = require('http'),
+    express = require('express'),
+    app = express(),
+    server = http.createServer(app),
+    io = require('socket.io').listen(server),
     userCount = 0;
 
-var server = express.createServer(),
-    io = io.listen(server);
+app.set('view engine', 'ejs')
+app.set('view options', {layout: false})
+app.set('views', __dirname + "/views")
+app.use("/static", express.static(__dirname + "/static"))
 
-server.set('view engine', 'ejs')
-server.set('view options', {layout: false})
-server.set('views', __dirname + "/views")
-server.use("/static", express.static(__dirname + "/static"))
-
-server.get('/', function(req, res) {
+app.get('/', function(req, res) {
     res.render('index');
 });
 
